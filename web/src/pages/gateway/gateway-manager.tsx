@@ -302,7 +302,7 @@ export function GatewayManager() {
         return;
       }
 
-      var newConfigStr = 'tenant:' + selectedTenants[0].name + '\r\n' + newConfig
+      var newConfigStr = 'tenant: ' + selectedTenants[0].name + '\r\n' + newConfig
       // If YAML is valid, proceed with creation
       await createMCPServer(newConfigStr);
       const tenantId = selectedTenants.length > 0 ? selectedTenants[0].id : undefined;

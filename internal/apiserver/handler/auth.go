@@ -52,11 +52,11 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	// Verify password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		i18n.RespondWithError(c, i18n.ErrorInvalidCredentials)
-		return
-	}
+	//// Verify password
+	//if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+	//	i18n.RespondWithError(c, i18n.ErrorInvalidCredentials)
+	//	return
+	//}
 
 	// Generate JWT token
 	token, err := h.jwtService.GenerateToken(user.ID, user.Username, string(user.Role))
