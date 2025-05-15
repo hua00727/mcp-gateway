@@ -304,7 +304,7 @@ export function GatewayManager() {
 
       var newConfigStr = 'tenant:' + selectedTenants[0].name + '\r\n' + newConfig
       // If YAML is valid, proceed with creation
-      await createMCPServer(newConfig);
+      await createMCPServer(newConfigStr);
       const tenantId = selectedTenants.length > 0 ? selectedTenants[0].id : undefined;
       const servers = await getMCPServers(tenantId);
       setMCPServers(servers);
