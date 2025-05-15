@@ -17,6 +17,7 @@ type MCPConfig struct {
 	Servers    string `gorm:"type:text; column:servers; default:''"`
 	Tools      string `gorm:"type:text; column:tools; default:''"`
 	McpServers string `gorm:"type:text; column:mcp_servers; default:''"`
+	Tenant     string `gorm:"type:text; column:tenant; default:''"`
 }
 
 // ToMCPConfig converts the database model to MCPConfig
@@ -25,6 +26,7 @@ func (m *MCPConfig) ToMCPConfig() (*config.MCPConfig, error) {
 		Name:      m.Name,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		Tenant:    m.Tenant,
 	}
 
 	if len(m.Routers) > 0 {
@@ -81,6 +83,7 @@ func FromMCPConfig(cfg *config.MCPConfig) (*MCPConfig, error) {
 		Servers:    string(servers),
 		Tools:      string(tools),
 		McpServers: string(mcpServers),
+		Tenant:     cfg.Tenant,
 	}, nil
 }
 
