@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -32,12 +33,42 @@ func (s *Server) handleSSE(c *gin.Context) {
 	}
 
 	sessionID := uuid.New().String()
+
+	// 解析URL
+	u, err := url.Parse(c.Request.RequestURI)
+	if err != nil {
+		fmt.Println("解析URL出错:", err)
+		s.sendProtocolError(c, sessionID, "Failed to create SSE connection", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
+		return
+	}
+
+	// 获取查询参数
+	params := u.Query()
+
+	appKey := ""
+
+	// 输出每个参数及其值
+	for key, values := range params {
+		for _, value := range values {
+			fmt.Printf("%s: %s\n", key, value)
+			if key == "appKey" {
+				appKey = value
+			}
+		}
+	}
+
+	if appKey == "" {
+		s.sendProtocolError(c, sessionID, "Failed to initialize SSE connection", http.StatusUnauthorized, mcp.ErrorCodeInternalError)
+		return
+	}
+
 	meta := &session.Meta{
 		ID:        sessionID,
 		CreatedAt: time.Now(),
 		Prefix:    prefix,
 		Type:      "sse",
 		Extra:     nil,
+		AppKey:    appKey,
 	}
 
 	conn, err := s.sessions.Register(c.Request.Context(), meta)

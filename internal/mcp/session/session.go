@@ -18,6 +18,7 @@ type Meta struct {
 	Prefix    string    `json:"prefix"`     // Optional namespace or application prefix
 	Type      string    `json:"type"`       // Connection type, e.g., "sse", "streamable"
 	Extra     []byte    `json:"extra"`      // Optional serialized extra data
+	AppKey    string    `json:"appKey"`
 }
 
 // Connection represents an active session connection capable of sending messages.

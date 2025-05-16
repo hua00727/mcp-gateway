@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -139,11 +140,40 @@ func (s *Server) handlePost(c *gin.Context) {
 				prefix = "/"
 			}
 
+			// 解析URL
+			u, err := url.Parse(c.Request.RequestURI)
+			if err != nil {
+				fmt.Println("解析URL出错:", err)
+				s.sendProtocolError(c, req.Id, "Failed to create connection", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
+				return
+			}
+
+			// 获取查询参数
+			params := u.Query()
+
+			appKey := ""
+
+			// 输出每个参数及其值
+			for key, values := range params {
+				for _, value := range values {
+					fmt.Printf("%s: %s\n", key, value)
+					if key == "appKey" {
+						appKey = value
+					}
+				}
+			}
+
+			if appKey == "" {
+				s.sendProtocolError(c, req.Id, "Failed to create session", http.StatusUnauthorized, mcp.ErrorCodeInternalError)
+				return
+			}
+
 			meta := &session.Meta{
 				ID:        sessionID,
 				CreatedAt: time.Now(),
 				Prefix:    prefix,
 				Type:      "streamable",
+				AppKey:    appKey,
 			}
 			conn, err = s.sessions.Register(c.Request.Context(), meta)
 			if err != nil {
@@ -312,7 +342,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 			}
 
 			// Execute the tool
-			result, err = s.executeHTTPTool(tool, args, c.Request, serverCfg.Config)
+			result, err = s.executeHTTPTool(tool, args, c.Request, serverCfg.Config, conn)
 			if err != nil {
 				s.logger.Error("failed to execute tool", zap.Error(err))
 				s.sendToolExecutionError(c, conn, req, err, false)

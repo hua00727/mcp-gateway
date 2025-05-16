@@ -100,7 +100,7 @@ func preprocessResponseData(data map[string]any) map[string]any {
 }
 
 // executeHTTPTool executes a tool with the given arguments
-func (s *Server) executeHTTPTool(tool *config.ToolConfig, args map[string]any, request *http.Request, serverCfg map[string]string) (*mcp.CallToolResult, error) {
+func (s *Server) executeHTTPTool(tool *config.ToolConfig, args map[string]any, request *http.Request, serverCfg map[string]string, conn session.Connection) (*mcp.CallToolResult, error) {
 	// Prepare template context
 	tmplCtx, err := template.PrepareTemplateContext(args, request, serverCfg)
 	if err != nil {
@@ -115,7 +115,8 @@ func (s *Server) executeHTTPTool(tool *config.ToolConfig, args map[string]any, r
 
 	// Process arguments
 	processArguments(req, tool, args)
-
+	req.Header.Set("Authorization", "Bearer "+conn.Meta().AppKey)
+	fmt.Printf("request: %s\n", req.GetBody)
 	// Execute request
 	cli := &http.Client{}
 	resp, err := cli.Do(req)
@@ -167,7 +168,7 @@ func (s *Server) invokeHTTPTool(c *gin.Context, req mcp.JSONRPCRequest, conn ses
 	}
 
 	// Execute the tool
-	result, err := s.executeHTTPTool(tool, args, c.Request, serverCfg.Config)
+	result, err := s.executeHTTPTool(tool, args, c.Request, serverCfg.Config, conn)
 	if err != nil {
 		s.sendToolExecutionError(c, conn, req, err, true)
 		return nil
