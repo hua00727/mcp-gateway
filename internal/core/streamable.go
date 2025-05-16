@@ -173,7 +173,6 @@ func (s *Server) handlePost(c *gin.Context) {
 				CreatedAt: time.Now(),
 				Prefix:    prefix,
 				Type:      "streamable",
-				AppKey:    appKey,
 			}
 			conn, err = s.sessions.Register(c.Request.Context(), meta)
 			if err != nil {

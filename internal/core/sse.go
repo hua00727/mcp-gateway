@@ -93,7 +93,6 @@ func (s *Server) handleSSE(c *gin.Context) {
 		Type:      "sse",
 		Request:   requestInfo,
 		Extra:     nil,
-		AppKey:    appKey,
 	}
 
 	s.logger.Info("establishing SSE connection",

@@ -55,6 +55,36 @@ func prepareRequest(tool *config.ToolConfig, tmplCtx *template.Context) (*http.R
 
 // processArguments processes tool arguments and adds them to the request
 func processArguments(req *http.Request, tool *config.ToolConfig, args map[string]any) {
+	//templateArgMap := make(map[string]string)
+	//for _, arg := range tool.Args {
+	//	if !arg.Required {
+	//		templateArgMap[arg.Name] = arg.Default
+	//	}
+	//}
+	//// 设置body默认值
+	//// 读取原始请求体
+	//body, err := io.ReadAll(req.Body)
+	//if err != nil {
+	//
+	//}
+	//defer req.Body.Close()
+	//
+	//// 解析JSON
+	//var data map[string]string
+	//err = json.Unmarshal(body, &data)
+	//fmt.Printf("response: %s\n", data)
+	//// 修改字段
+	//for key, value := range data {
+	//	templateArgMap[key] = value
+	//}
+	//// 将修改后的结构体转回JSON
+	//newBody, err := json.Marshal(data)
+	//
+	//// 更新请求体
+	//req.Body = io.NopCloser(bytes.NewBuffer(newBody))
+	//req.ContentLength = int64(len(newBody))
+	//req.Header.Set("Content-Length", fmt.Sprintf("%d", len(newBody)))
+
 	for _, arg := range tool.Args {
 		value := fmt.Sprint(args[arg.Name])
 		switch strings.ToLower(arg.Position) {
@@ -138,7 +168,8 @@ func (s *Server) executeHTTPTool(conn session.Connection, tool *config.ToolConfi
 
 	// Process arguments
 	processArguments(req, tool, args)
-	req.Header.Set("Authorization", "Bearer "+conn.Meta().AppKey)
+	appKey := tmplCtx.Request.Query["appKey"]
+	req.Header.Set("Authorization", "Bearer "+appKey)
 
 	// Execute request
 	cli := &http.Client{}
