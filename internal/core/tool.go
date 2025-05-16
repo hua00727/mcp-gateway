@@ -139,7 +139,7 @@ func (s *Server) executeHTTPTool(conn session.Connection, tool *config.ToolConfi
 	// Process arguments
 	processArguments(req, tool, args)
 	req.Header.Set("Authorization", "Bearer "+conn.Meta().AppKey)
-	fmt.Printf("request: %s\n", req.GetBody)
+
 	// Execute request
 	cli := &http.Client{}
 	s.logger.Debug("sending HTTP request",
