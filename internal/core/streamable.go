@@ -261,7 +261,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				return
 			}
 
-			tools, err = mcpproxy.FetchStdioToolList(c.Request.Context(), mcpProxyCfg)
+			tools, err = mcpproxy.FetchStdioToolList(c.Request.Context(), conn, mcpProxyCfg)
 			if err != nil {
 				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
 				return
@@ -273,7 +273,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				return
 			}
 
-			tools, err = mcpproxy.FetchSSEToolList(c.Request.Context(), mcpProxyCfg)
+			tools, err = mcpproxy.FetchSSEToolList(c.Request.Context(), conn, mcpProxyCfg)
 			if err != nil {
 				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
 				return
@@ -285,7 +285,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				return
 			}
 
-			tools, err = mcpproxy.FetchStreamableToolList(c.Request.Context(), mcpProxyCfg)
+			tools, err = mcpproxy.FetchStreamableToolList(c.Request.Context(), conn, mcpProxyCfg)
 			if err != nil {
 				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
 				return
@@ -342,7 +342,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 			}
 
 			// Execute the tool
-			result, err = s.executeHTTPTool(tool, args, c.Request, serverCfg.Config, conn)
+			result, err = s.executeHTTPTool(conn, tool, args, c.Request, serverCfg.Config)
 			if err != nil {
 				s.logger.Error("failed to execute tool", zap.Error(err))
 				s.sendToolExecutionError(c, conn, req, err, false)
@@ -355,7 +355,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				s.sendProtocolError(c, req.Id, errMsg, http.StatusNotFound, mcp.ErrorCodeMethodNotFound)
 				return
 			}
-			result, err = mcpproxy.InvokeStdioTool(c, mcpProxyCfg, params)
+			result, err = mcpproxy.InvokeStdioTool(c, conn, mcpProxyCfg, params)
 			if err != nil {
 				s.sendToolExecutionError(c, conn, req, err, true)
 				return
@@ -367,7 +367,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				s.sendProtocolError(c, req.Id, errMsg, http.StatusNotFound, mcp.ErrorCodeMethodNotFound)
 				return
 			}
-			result, err = mcpproxy.InvokeSSETool(c, mcpProxyCfg, params)
+			result, err = mcpproxy.InvokeSSETool(c, conn, mcpProxyCfg, params)
 			if err != nil {
 				s.sendToolExecutionError(c, conn, req, err, true)
 				return
@@ -379,7 +379,7 @@ func (s *Server) handleMCPRequest(c *gin.Context, req mcp.JSONRPCRequest, conn s
 				s.sendProtocolError(c, req.Id, errMsg, http.StatusNotFound, mcp.ErrorCodeMethodNotFound)
 				return
 			}
-			result, err = mcpproxy.InvokeStreamableTool(c, mcpProxyCfg, params)
+			result, err = mcpproxy.InvokeStreamableTool(c, conn, mcpProxyCfg, params)
 			if err != nil {
 				s.sendToolExecutionError(c, conn, req, err, false)
 				return

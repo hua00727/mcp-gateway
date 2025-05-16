@@ -1,4 +1,4 @@
-import { Card, CardBody, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Autocomplete, AutocompleteItem } from "@heroui/react";
+import { Card, CardBody, Button, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Autocomplete, AutocompleteItem } from "@heroui/react";
 import { Icon } from '@iconify/react';
 import Editor from '@monaco-editor/react';
 import yaml from 'js-yaml';
@@ -6,6 +6,7 @@ import { configureMonacoYaml } from 'monaco-yaml';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { AccessibleModal } from "../../components/AccessibleModal";
 import { getMCPServers, createMCPServer, updateMCPServer, deleteMCPServer, syncMCPServers, getUserAuthorizedTenants, getTenant } from '../../services/api';
 import { toast } from '../../utils/toast';
 
@@ -412,6 +413,7 @@ export function GatewayManager() {
             color="primary"
             onPress={onCreateOpen}
             startContent={<Icon icon="material-symbols:add" />}
+            aria-label={t('gateway.add')}
           >
             {t('gateway.add')}
           </Button>
@@ -421,6 +423,7 @@ export function GatewayManager() {
             onPress={onImportOpen}
             startContent={<Icon icon="material-symbols:upload" />}
             className="bg-purple-500 hover:bg-purple-600 text-white"
+            aria-label={t('gateway.import_openapi')}
           >
             {t('gateway.import_openapi')}
           </Button>
@@ -429,6 +432,7 @@ export function GatewayManager() {
             onPress={handleSync}
             isLoading={isLoading}
             startContent={<Icon icon="material-symbols:sync" />}
+            aria-label={t('gateway.sync')}
           >
             {t('gateway.sync')}
           </Button>
@@ -445,6 +449,7 @@ export function GatewayManager() {
               key={tenant.id} 
               onClose={() => handleRemoveTenant(tenant.id)}
               variant="flat"
+              aria-label={`${tenant.name} (${tenant.prefix})`}
             >
               {`${tenant.name}(${tenant.prefix})`}
             </Chip>
@@ -464,6 +469,7 @@ export function GatewayManager() {
             emptyContent: t('common.no_results')
           }}
           items={customTenantFilter(tenantInputValue, availableTenants)}
+          aria-label={t('gateway.search_tenant')}
         >
           {(tenant) => (
             <AutocompleteItem 
@@ -549,6 +555,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(router.prefix)}
+                                    aria-label={`${t('common.copy')} ${router.prefix}`}
                                   >
                                     {router.prefix}
                                   </Chip>
@@ -558,6 +565,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(router.server)}
+                                    aria-label={`${t('common.copy')} ${router.server}`}
                                   >
                                     {router.server}
                                   </Chip>
@@ -575,7 +583,9 @@ export function GatewayManager() {
                                   <div key={idx} className="flex flex-col gap-1 p-2 border border-default-200 rounded-md">
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm font-medium">{mcpServer.name}</span>
-                                      <Chip size="sm" variant="flat" color="warning">{mcpServer.type}</Chip>
+                                      <Chip size="sm" variant="flat" color="warning" aria-label={`Type: ${mcpServer.type}`}>
+                                        {mcpServer.type}
+                                      </Chip>
                                     </div>
                                     {mcpServer.type === 'stdio' && (
                                       <div className="text-xs">
@@ -623,6 +633,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="truncate cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(tool)}
+                                    aria-label={`${t('common.copy')} ${tool}`}
                                   >
                                     {tool}
                                   </Chip>
@@ -641,6 +652,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="truncate cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(tool.name)}
+                                    aria-label={`${t('common.copy')} ${tool.name}`}
                                   >
                                     {tool.name}
                                   </Chip>
@@ -667,6 +679,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(router.prefix)}
+                                    aria-label={`${t('common.copy')} ${router.prefix}`}
                                   >
                                     {router.prefix}
                                   </Chip>
@@ -676,6 +689,7 @@ export function GatewayManager() {
                                     size="sm"
                                     className="cursor-pointer hover:opacity-80 select-none"
                                     onClick={() => handleCopyToClipboard(router.server)}
+                                    aria-label={`${t('common.copy')} ${router.server}`}
                                   >
                                     {router.server}
                                   </Chip>
@@ -693,7 +707,9 @@ export function GatewayManager() {
                                 <div key={idx} className="flex flex-col gap-1 p-2 border border-default-200 rounded-md">
                                   <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium">{mcpServer.name}</span>
-                                    <Chip size="sm" variant="flat" color="warning">{mcpServer.type}</Chip>
+                                    <Chip size="sm" variant="flat" color="warning" aria-label={`Type: ${mcpServer.type}`}>
+                                      {mcpServer.type}
+                                    </Chip>
                                   </div>
                                   {mcpServer.type === 'stdio' && (
                                     <div className="text-xs">
@@ -738,7 +754,7 @@ export function GatewayManager() {
         </div>
       )}
 
-      <Modal
+      <AccessibleModal
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         size="3xl"
@@ -769,9 +785,9 @@ export function GatewayManager() {
             </>
           )}
         </ModalContent>
-      </Modal>
+      </AccessibleModal>
 
-      <Modal
+      <AccessibleModal
         isOpen={isCreateOpen}
         onOpenChange={onCreateOpenChange}
         size="3xl"
@@ -802,9 +818,9 @@ export function GatewayManager() {
             </>
           )}
         </ModalContent>
-      </Modal>
+      </AccessibleModal>
 
-      <Modal isOpen={isImportOpen} onOpenChange={onImportOpenChange} size="2xl">
+      <AccessibleModal isOpen={isImportOpen} onOpenChange={onImportOpenChange} size="2xl">
         <ModalContent>
           <ModalHeader>{t('gateway.import_openapi')}</ModalHeader>
           <ModalBody>
@@ -816,7 +832,7 @@ export function GatewayManager() {
             </Button>
           </ModalFooter>
         </ModalContent>
-      </Modal>
+      </AccessibleModal>
     </div>
   );
 }
