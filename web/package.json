@@ -1,7 +1,7 @@
 {
   "name": "mcp-admin-dashboard",
   "private": true,
-  "version": "0.4.3",
+  "version": "0.4.5",
   "type": "module",
   "description": "MCP Gateway Admin Dashboard - A modern web interface for managing MCP Gateway services",
   "keywords": [
@@ -63,7 +63,8 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

@@ -1,6 +1,6 @@
-import { Input, Select, SelectItem, Button } from "@heroui/react";
+import { Input, Select, SelectItem, Button, Switch } from "@heroui/react";
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
 
 import { GatewayConfig } from '../types';
 
@@ -14,7 +14,10 @@ export function MCPServersConfig({
   updateConfig
 }: MCPServersConfigProps) {
   const { t } = useTranslation();
-  const mcpServers = parsedConfig?.mcpServers || [{ type: "stdio", name: "", command: "", args: [], env: {} }];
+  const mcpServers = useMemo(() => 
+    parsedConfig?.mcpServers || [{ type: "stdio", name: "", command: "", args: [], env: {} }],
+    [parsedConfig?.mcpServers]
+  );
   const [commandInputs, setCommandInputs] = useState<{ [key: number]: string }>({});
 
   // Initialize command inputs when mcpServers changes
@@ -26,22 +29,28 @@ export function MCPServersConfig({
     setCommandInputs(initialInputs);
   }, [mcpServers]);
 
-  const updateServer = (index: number, field: string, value: string) => {
+  const updateServer = (index: number, field: 'name' | 'type' | 'policy' | 'command' | 'url' | 'preinstalled', value: string | boolean) => {
     const updatedServers = [...mcpServers];
     const oldName = updatedServers[index].name;
     
     if (field === 'command') {
       // Split the command string by whitespace and update both command and args
-      const parts = value.trim().split(/\s+/);
+      const commandValue = value as string;
+      const parts = commandValue.trim().split(/\s+/);
       updatedServers[index] = {
         ...updatedServers[index],
         command: parts[0] || '',
         args: parts.slice(1)
       };
+    } else if (field === 'preinstalled') {
+      updatedServers[index] = {
+        ...updatedServers[index],
+        [field]: value as boolean
+      };
     } else {
       updatedServers[index] = {
         ...updatedServers[index],
-        [field]: value
+        [field]: value as string
       };
     }
 
@@ -49,7 +58,7 @@ export function MCPServersConfig({
     if (field === 'name' && oldName !== value && parsedConfig.routers) {
       const updatedRouters = parsedConfig.routers.map(router => {
         if (router.server === oldName) {
-          return { ...router, server: value };
+          return { ...router, server: value as string };
         }
         return router;
       });
@@ -157,7 +166,8 @@ export function MCPServersConfig({
       name: "",
       command: "",
       args: [],
-      env: {}
+      env: {},
+      preinstalled: false
     };
     updateConfig({
       mcpServers: [...mcpServers, newServer]
@@ -205,8 +215,26 @@ export function MCPServersConfig({
             <SelectItem key="streamable-http">streamable-http</SelectItem>
           </Select>
 
+          <Select
+            label={t('gateway.startup_policy')}
+            selectedKeys={[server.policy || "onDemand"]}
+            onChange={(e) => updateServer(index, 'policy', e.target.value)}
+            aria-label={t('gateway.startup_policy')}
+          >
+            <SelectItem key="onDemand">{t('gateway.policy_on_demand')}</SelectItem>
+            <SelectItem key="onStart">{t('gateway.policy_on_start')}</SelectItem>
+          </Select>
+
           {(server.type === 'stdio' || !server.type) && (
             <>
+              <Switch
+                isSelected={server.preinstalled}
+                onValueChange={(value) => updateServer(index, 'preinstalled', value)}
+                size="sm"
+              >
+                {t('gateway.preinstalled')}
+              </Switch>
+
               <Input
                 label={t('gateway.command')}
                 value={commandInputs[index] || ''}

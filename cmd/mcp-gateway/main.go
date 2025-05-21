@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,7 +20,6 @@ import (
 	"github.com/mcp-ecosystem/mcp-gateway/pkg/utils"
 	"github.com/mcp-ecosystem/mcp-gateway/pkg/version"
 
-	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -114,7 +112,7 @@ var (
 		},
 	}
 	rootCmd = &cobra.Command{
-		Use:   "mcp-gateway",
+		Use:   cnst.CommandName,
 		Short: "MCP Gateway service",
 		Long:  `MCP Gateway is a service that provides API gateway functionality for MCP ecosystem`,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -162,7 +160,7 @@ func handleReload(ctx context.Context, logger *zap.Logger, store storage.Store, 
 	}
 
 	// Update server configuration in place
-	if err := srv.UpdateConfig(newMCPCfgs); err != nil {
+	if err := srv.UpdateConfig(ctx, newMCPCfgs); err != nil {
 		logger.Error("failed to update server configuration",
 			zap.Error(err))
 		return
@@ -171,7 +169,7 @@ func handleReload(ctx context.Context, logger *zap.Logger, store storage.Store, 
 	logger.Info("Configuration reloaded successfully")
 }
 
-func handleMerge(_ context.Context, logger *zap.Logger, srv *core.Server, mcpConfig *config.MCPConfig) {
+func handleMerge(ctx context.Context, logger *zap.Logger, srv *core.Server, mcpConfig *config.MCPConfig) {
 	logger.Info("Merging MCP configuration")
 	// Validate configurations before merging
 	if err := config.ValidateMCPConfig(mcpConfig); err != nil {
@@ -187,7 +185,7 @@ func handleMerge(_ context.Context, logger *zap.Logger, srv *core.Server, mcpCon
 	}
 
 	// Update server configuration in place
-	if err := srv.MergeConfig(mcpConfig); err != nil {
+	if err := srv.MergeConfig(ctx, mcpConfig); err != nil {
 		logger.Error("failed to merge server configuration",
 			zap.Error(err))
 		return
@@ -243,38 +241,14 @@ func run() {
 			zap.Error(err))
 	}
 
-	// Validate configurations before merging
-	if err := config.ValidateMCPConfigs(mcpConfigs); err != nil {
-		var validationErr *config.ValidationError
-		if errors.As(err, &validationErr) {
-			logger.Fatal("Configuration validation failed",
-				zap.String("error", validationErr.Error()))
-		}
-		logger.Fatal("failed to validate configurations",
-			zap.Error(err))
-	}
-
-	mcpCfgs, err := helper.MergeConfigs(mcpConfigs)
-	if err != nil {
-		logger.Fatal("failed to merge MCP configurations",
-			zap.Error(err))
-	}
-
 	srv, err := core.NewServer(logger, cfg)
 	if err != nil {
 		logger.Fatal("failed to create server",
 			zap.Error(err))
 	}
 
-	router := gin.Default()
-	// add health_check url for k8s readiness probe
-	router.GET("/health_check", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"message": "Health check passed.",
-		})
-	})
-	if err := srv.RegisterRoutes(router, mcpCfgs); err != nil {
+	err = srv.RegisterRoutes(ctx, mcpConfigs)
+	if err != nil {
 		logger.Fatal("failed to register routes",
 			zap.Error(err))
 	}
@@ -290,13 +264,7 @@ func run() {
 			zap.Error(err))
 	}
 
-	go func() {
-		logger.Info("Starting main server", zap.Int("port", cfg.Port))
-		if err := router.Run(fmt.Sprintf(":%d", cfg.Port)); err != nil {
-			logger.Fatal("failed to start main server",
-				zap.Error(err))
-		}
-	}()
+	srv.Start()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
