@@ -40,12 +40,13 @@ type (
 
 	// SessionRedisConfig represents the Redis configuration for session storage
 	SessionRedisConfig struct {
-		Addr     string `yaml:"addr"`
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-		DB       int    `yaml:"db"`
-		Topic    string `yaml:"topic"`
-		Prefix   string `yaml:"prefix"`
+		Addr     string        `yaml:"addr"`
+		Username string        `yaml:"username"`
+		Password string        `yaml:"password"`
+		DB       int           `yaml:"db"`
+		Topic    string        `yaml:"topic"`
+		Prefix   string        `yaml:"prefix"`
+		TTL      time.Duration `yaml:"ttl"` // TTL for session data in Redis
 	}
 
 	// LoggerConfig represents the logger configuration
@@ -82,7 +83,6 @@ func LoadConfig[T Type](filename string) (*T, string, error) {
 
 	// Resolve environment variables
 	data = resolveEnv(data)
-
 	var cfg T
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return nil, cfgPath, err
