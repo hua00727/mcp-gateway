@@ -60,7 +60,13 @@ export interface ServerConfig {
 export interface RouterConfig {
   server: string;
   prefix: string;
+  ssePrefix?: string;
   cors?: CORSConfig;
+  auth?: AuthConfig;
+}
+
+export interface AuthConfig {
+  mode: string;
 }
 
 export interface CORSConfig {

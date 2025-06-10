@@ -31,9 +31,11 @@ type (
 	}
 
 	RouterConfig struct {
-		Server string      `json:"server" yaml:"server"`
-		Prefix string      `json:"prefix" yaml:"prefix"`
-		CORS   *CORSConfig `json:"cors,omitempty" yaml:"cors,omitempty"`
+		Server    string      `json:"server" yaml:"server"`
+		Prefix    string      `json:"prefix" yaml:"prefix"`
+		SSEPrefix string      `json:"ssePrefix" yaml:"ssePrefix"`
+		CORS      *CORSConfig `json:"cors,omitempty" yaml:"cors,omitempty"`
+		Auth      *Auth       `json:"auth,omitempty" yaml:"auth,omitempty"`
 	}
 
 	CORSConfig struct {
@@ -92,8 +94,9 @@ type (
 	}
 
 	ItemsConfig struct {
-		Type string   `json:"type" yaml:"type"`
-		Enum []string `json:"enum,omitempty" yaml:"enum,omitempty"`
+		Type       string         `json:"type" yaml:"type"`
+		Enum       []string       `json:"enum,omitempty" yaml:"enum,omitempty"`
+		Properties map[string]any `json:"properties,omitempty" yaml:"properties,omitempty"`
 	}
 
 	// MCPConfigVersion represents a version of an MCP configuration
@@ -110,6 +113,11 @@ type (
 		McpServers string          `json:"mcp_servers" yaml:"mcp_servers"`
 		IsActive   bool            `json:"is_active" yaml:"is_active"` // indicates if this version is currently active
 		Hash       string          `json:"hash" yaml:"hash"`           // hash of the configuration content
+	}
+
+	// Auth represents authentication configuration
+	Auth struct {
+		Mode cnst.AuthMode `json:"mode" yaml:"mode"`
 	}
 )
 
@@ -130,6 +138,10 @@ func (t *ToolConfig) ToToolSchema() mcp.ToolSchema {
 				items["enum"] = lol.Union(arg.Items.Enum)
 			} else {
 				items["type"] = arg.Items.Type
+				// If items is an object type, recursively process its properties
+				if arg.Items.Type == "object" && arg.Items.Properties != nil {
+					items["properties"] = arg.Items.Properties
+				}
 			}
 			property["items"] = items
 		}

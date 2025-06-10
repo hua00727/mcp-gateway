@@ -297,6 +297,15 @@ export function RouterConfig({
                     ))}
                   </>
                 </Select>
+                <Input
+                  label={t('gateway.sse_prefix')}
+                  value={(router.ssePrefix || "")}
+                  onChange={(e) => {
+                    const pathPart = e.target.value.trim();
+                    updateRouter(index, 'ssePrefix', pathPart);
+                  }}
+                  placeholder={t('gateway.sse_prefix_placeholder')}
+                />
               </div>
 
               {/* CORS配置部分 */}
@@ -333,6 +342,44 @@ export function RouterConfig({
                 </div>
 
                 {router.cors && renderCorsConfig(router, index)}
+              </div>
+
+              {/* 认证开关部分 */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    size="sm"
+                    isSelected={Boolean(router.auth)}
+                    onValueChange={(isSelected) => {
+                      const updatedRouters = [...routers];
+                      if (isSelected) {
+                        updatedRouters[index] = {
+                          ...updatedRouters[index],
+                          auth: { mode: 'oauth2' }
+                        };
+                      } else {
+                        const { auth: _auth, ...rest } = updatedRouters[index];
+                        updatedRouters[index] = rest;
+                      }
+                      updateConfig({ routers: updatedRouters });
+                    }}
+                  />
+                  <span className="text-sm font-medium">{t('gateway.enable_auth')}</span>
+                </div>
+
+                {router.auth && (
+                  <div className="pl-6">
+                    <Select
+                      size="sm"
+                      label={t('gateway.auth_mode')}
+                      selectedKeys={['oauth2']}
+                      aria-label={t('gateway.auth_mode')}
+                      isDisabled={true}
+                    >
+                      <SelectItem key="oauth2">OAuth2</SelectItem>
+                    </Select>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end">

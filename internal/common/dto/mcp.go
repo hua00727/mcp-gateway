@@ -30,9 +30,11 @@ type MCPConfig struct {
 }
 
 type RouterConfig struct {
-	Server string      `json:"server"`
-	Prefix string      `json:"prefix"`
-	CORS   *CORSConfig `json:"cors,omitempty"`
+	Server    string      `json:"server"`
+	Prefix    string      `json:"prefix"`
+	SSEPrefix string      `json:"ssePrefix,omitempty"`
+	CORS      *CORSConfig `json:"cors,omitempty"`
+	Auth      *Auth       `json:"auth,omitempty"`
 }
 
 type CORSConfig struct {
@@ -41,6 +43,10 @@ type CORSConfig struct {
 	AllowHeaders     []string `json:"allowHeaders,omitempty"`
 	ExposeHeaders    []string `json:"exposeHeaders,omitempty"`
 	AllowCredentials bool     `json:"allowCredentials"`
+}
+
+type Auth struct {
+	Mode string `json:"mode"`
 }
 
 type ServerConfig struct {
@@ -117,9 +123,11 @@ func FromRouterConfigs(cfgs []config.RouterConfig) []RouterConfig {
 	result := make([]RouterConfig, len(cfgs))
 	for i, cfg := range cfgs {
 		result[i] = RouterConfig{
-			Server: cfg.Server,
-			Prefix: cfg.Prefix,
-			CORS:   FromCORSConfig(cfg.CORS),
+			Server:    cfg.Server,
+			Prefix:    cfg.Prefix,
+			SSEPrefix: cfg.SSEPrefix,
+			CORS:      FromCORSConfig(cfg.CORS),
+			Auth:      FromAuthConfig(cfg.Auth),
 		}
 	}
 	return result
@@ -238,4 +246,14 @@ func FromMCPServerConfigs(cfgs []config.MCPServerConfig) []MCPServerConfig {
 		}
 	}
 	return result
+}
+
+// FromAuthConfig converts a config.Auth to dto.Auth
+func FromAuthConfig(cfg *config.Auth) *Auth {
+	if cfg == nil {
+		return nil
+	}
+	return &Auth{
+		Mode: string(cfg.Mode),
+	}
 }

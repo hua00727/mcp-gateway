@@ -113,3 +113,19 @@ func (s *State) GetTransports() map[string]mcpproxy.Transport {
 func (s *State) GetRawConfigs() []*config.MCPConfig {
 	return s.rawConfigs
 }
+
+func (s *State) GetAuth(prefix string) *config.Auth {
+	runtime, ok := s.runtime[uriPrefix(prefix)]
+	if !ok || runtime.router == nil {
+		return nil
+	}
+	return runtime.router.Auth
+}
+
+func (s *State) GetSSEPrefix(prefix string) string {
+	runtime, ok := s.runtime[uriPrefix(prefix)]
+	if ok && runtime.router != nil {
+		return runtime.router.SSEPrefix
+	}
+	return ""
+}

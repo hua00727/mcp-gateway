@@ -71,3 +71,29 @@ session:
     topic: "${SESSION_REDIS_TOPIC:mcp-gateway:session}"
     prefix: "${SESSION_REDIS_PREFIX:session}"
     ttl: "${SESSION_REDIS_TTL:24h}"  # Session TTL in Redis
+
+# OAuth2 configuration
+auth:
+  oauth2:
+    issuer: "${OAUTH2_ISSUER:https://github.com/mcp-ecosystem/mcp-gateway}"
+    storage:
+      type: "${OAUTH2_STORAGE_TYPE:memory}"  # memory or redis
+      redis:
+        addr: "${OAUTH2_REDIS_ADDR:localhost:6379}"
+        password: "${OAUTH2_REDIS_PASSWORD:}"
+        db: ${OAUTH2_REDIS_DB:0}
+  cors:
+    allowOrigins:
+      - "*"
+    allowMethods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "OPTIONS"
+    allowHeaders:
+      - "Content-Type"
+      - "Authorization"
+      - "Mcp-Session-Id"
+    exposeHeaders:
+      - "Mcp-Session-Id"
+    allowCredentials: true
