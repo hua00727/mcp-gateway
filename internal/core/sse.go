@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mcp-ecosystem/mcp-gateway/pkg/version"
+	"github.com/amoylab/unla/pkg/version"
 
 	"go.uber.org/zap"
 
-	"github.com/mcp-ecosystem/mcp-gateway/internal/common/cnst"
-	"github.com/mcp-ecosystem/mcp-gateway/internal/mcp/session"
-	"github.com/mcp-ecosystem/mcp-gateway/pkg/mcp"
+	"github.com/amoylab/unla/internal/common/cnst"
+	"github.com/amoylab/unla/internal/mcp/session"
+	"github.com/amoylab/unla/pkg/mcp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -374,31 +374,7 @@ func (s *Server) handlePostMessage(c *gin.Context, conn session.Connection) {
 				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
 				return
 			}
-		case cnst.BackendProtoStdio:
-			transport := s.state.GetTransport(conn.Meta().Prefix)
-			if transport == nil {
-				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
-				return
-			}
-
-			tools, err = transport.FetchTools(c.Request.Context())
-			if err != nil {
-				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
-				return
-			}
-		case cnst.BackendProtoSSE:
-			transport := s.state.GetTransport(conn.Meta().Prefix)
-			if transport == nil {
-				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
-				return
-			}
-
-			tools, err = transport.FetchTools(c.Request.Context())
-			if err != nil {
-				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
-				return
-			}
-		case cnst.BackendProtoStreamable:
+		case cnst.BackendProtoStdio, cnst.BackendProtoSSE, cnst.BackendProtoStreamable:
 			transport := s.state.GetTransport(conn.Meta().Prefix)
 			if transport == nil {
 				s.sendProtocolError(c, req.Id, "Failed to fetch tools", http.StatusInternalServerError, mcp.ErrorCodeInternalError)
@@ -449,33 +425,7 @@ func (s *Server) handlePostMessage(c *gin.Context, conn session.Connection) {
 		switch protoType {
 		case cnst.BackendProtoHttp:
 			result = s.callHTTPTool(c, req, conn, params)
-		case cnst.BackendProtoStdio:
-			transport := s.state.GetTransport(conn.Meta().Prefix)
-			if transport == nil {
-				errMsg := "Server configuration not found"
-				s.sendProtocolError(c, req.Id, errMsg, http.StatusNotFound, mcp.ErrorCodeMethodNotFound)
-				return
-			}
-
-			result, err = transport.CallTool(c.Request.Context(), params, mergeRequestInfo(conn.Meta().Request, c.Request))
-			if err != nil {
-				s.sendToolExecutionError(c, conn, req, err, true)
-				return
-			}
-		case cnst.BackendProtoSSE:
-			transport := s.state.GetTransport(conn.Meta().Prefix)
-			if transport == nil {
-				errMsg := "Server configuration not found"
-				s.sendProtocolError(c, req.Id, errMsg, http.StatusNotFound, mcp.ErrorCodeMethodNotFound)
-				return
-			}
-
-			result, err = transport.CallTool(c.Request.Context(), params, mergeRequestInfo(conn.Meta().Request, c.Request))
-			if err != nil {
-				s.sendToolExecutionError(c, conn, req, err, true)
-				return
-			}
-		case cnst.BackendProtoStreamable:
+		case cnst.BackendProtoStdio, cnst.BackendProtoSSE, cnst.BackendProtoStreamable:
 			transport := s.state.GetTransport(conn.Meta().Prefix)
 			if transport == nil {
 				errMsg := "Server configuration not found"

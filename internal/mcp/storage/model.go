@@ -7,18 +7,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mcp-ecosystem/mcp-gateway/internal/common/cnst"
-	"github.com/mcp-ecosystem/mcp-gateway/internal/common/config"
+	"github.com/amoylab/unla/internal/common/cnst"
+	"github.com/amoylab/unla/internal/common/config"
 	"gorm.io/gorm"
 )
 
 // MCPConfig represents the database model for MCPConfig
 type MCPConfig struct {
-	ID         int64  `gorm:"primaryKey;autoIncrement"`
-	Name       string `gorm:"column:name; type:varchar(50); uniqueIndex:idx_name_tenant,priority:2"`
-	Tenant     string `gorm:"column:tenant; type:varchar(50); default:''; uniqueIndex:idx_name_tenant,priority:1"`
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID         int64          `gorm:"primaryKey;autoIncrement"`
+	Name       string         `gorm:"column:name; type:varchar(50); uniqueIndex:idx_name_tenant,priority:2"`
+	Tenant     string         `gorm:"column:tenant; type:varchar(50); default:''; uniqueIndex:idx_name_tenant,priority:1"`
+	CreatedAt  time.Time      `gorm:"column:created_at;"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at;"`
 	Routers    string         `gorm:"type:text; column:routers"`
 	Servers    string         `gorm:"type:text; column:servers"`
 	Tools      string         `gorm:"type:text; column:tools"`

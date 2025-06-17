@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mcp-ecosystem/mcp-gateway/internal/common/cnst"
-	"github.com/mcp-ecosystem/mcp-gateway/internal/common/config"
+	"github.com/amoylab/unla/internal/common/cnst"
+	"github.com/amoylab/unla/internal/common/config"
 
 	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
@@ -289,6 +289,7 @@ func (s *DBStore) Update(ctx context.Context, server *config.MCPConfig) error {
 			if err := tx.Where("tenant = ? AND name = ?", server.Tenant, server.Name).
 				Order("version DESC").
 				Offset(s.cfg.RevisionHistoryLimit).
+				Limit(1_000).
 				Find(&versionsToDelete).Error; err != nil {
 				return err
 			}
